@@ -11,7 +11,7 @@ module RSpec
         config.add_setting :clear_lets_on_failure, :default => true
 
         config.around(:each) do |example|
-          retry_count = example.metadata[:retry] || RSpec.configuration.default_retry_count
+          retry_count = example.metadata[:retry] || RSpec::Retry.default_retry_count(example)
 
           clear_lets = example.metadata[:clear_lets_on_failure]
           clear_lets = RSpec.configuration.clear_lets_on_failure if clear_lets.nil?
@@ -47,6 +47,14 @@ module RSpec
         else    "#{number}th"
         end
       end
+    end
+
+    def self.default_retry_count(example)
+      count = RSpec.configuration.default_retry_count
+      if count.respond_to?(:call)
+        count = count.call(example)
+      end
+      count
     end
   end
 end
